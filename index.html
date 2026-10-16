@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bellenpop</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#e6f4f1; --ink:#12343b; --muted:#4f7078; --panel:#cfe8e3; --btn:#12343b; --btn-ink:#e6f4f1;
+  --s0:#0004;--s1:#0004;--s2:#0004;--s3:#0004;--s4:#0004; --c0:#e8505b; --c1:#f2b134; --c2:#3fae6a; --c3:#3c8dde; --c4:#9b5fd1;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-cb="aan"]{--c0:#0072B2;--c1:#E69F00;--c2:#CC79A7;--c3:#F0E442;--c4:#009E73;--s0:#ffffff8c;--s1:#00000066;--s2:#00000066;--s3:#00000066;--s4:#ffffff8c}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f2a30;--ink:#e3f3f0;--muted:#8fb3ba;--panel:#18414a;--btn:#e3f3f0;--btn-ink:#0f2a30}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;--bg:#0f2a30;--ink:#e3f3f0;--muted:#8fb3ba;--panel:#18414a;--btn:#e3f3f0;--btn-ink:#0f2a30}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:12px;margin:0;min-height:100%}
+header{width:100%;max-width:460px;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.02em}
+.stats{display:flex;gap:16px;text-align:right}
+.stats div{font-size:.8rem;color:var(--muted)}
+.stats b{display:block;font-size:1.3rem;color:var(--ink);font-variant-numeric:tabular-nums}
+#board{width:100%;max-width:460px;background:var(--panel);border-radius:16px;padding:6px;display:grid;gap:2px;touch-action:manipulation}
+.cell{position:relative;border:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center}
+.b{width:86%;height:86%;border-radius:50%;background:radial-gradient(circle at 30% 27%,#ffffff55 0 13%,transparent 31%),var(--c);border:1.5px solid color-mix(in srgb,var(--c) 72%,#000);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.b svg{display:none;width:50%;height:50%;fill:var(--sym);stroke:var(--sym)}
+:root[data-cb="aan"] .b svg{display:block}
+.sel .b{transform:scale(1.12);outline:3px solid var(--ink);outline-offset:1px}
+.cell.fall{animation:drop var(--t) cubic-bezier(.45,0,.85,.6) both}
+@keyframes drop{from{transform:translate(calc(var(--dx)*(100% + 2px)),calc(var(--dy)*(100% + 2px)))}to{transform:none}}
+#info{min-height:2.6em;margin:10px 0 6px;text-align:center}
+.actions{display:flex;gap:10px}
+button.act{background:var(--btn);color:var(--btn-ink);border:0;border-radius:999px;padding:12px 24px;font:inherit;font-weight:700}
+button.act:disabled{opacity:.35}
+button:focus-visible{outline:3px solid var(--c3);outline-offset:2px}
+.set{width:100%;max-width:460px;margin-top:18px;display:grid;gap:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row>span{color:var(--muted);font-size:.9rem}
+.seg{display:flex;background:var(--panel);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:.9rem;padding:7px 14px;border-radius:999px}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);font-weight:700}
+.hide{display:none!important}
+:root[data-hand="links"] .pts{left:auto;right:-2px}
+#start>.gear2{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:auto}
+#panel{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--bg) 55%,transparent);display:grid;align-items:end;justify-items:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.sheet{width:min(100%,460px);background:var(--bg);border:2px solid var(--panel);border-radius:16px;padding:14px 16px 18px}
+.phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pts{position:absolute;top:-3px;left:-2px;z-index:2;font-size:.62rem;font-weight:700;line-height:1;padding:2px 4px;border-radius:6px;background:var(--ink);color:var(--bg);pointer-events:none}
+#start{position:fixed;inset:0;z-index:10;background:color-mix(in srgb,var(--bg) 78%,transparent);display:grid;align-content:center;justify-items:center;gap:18px;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+#start>*{width:min(100%,460px)}
+#start h1{font-size:2.2rem}
+#start p{margin:0;color:var(--muted)}
+#game{width:100%;max-width:460px;display:flex;flex-direction:column;align-items:center}
+.top{display:flex;gap:12px;align-items:flex-end}
+button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:.8rem}
+#confirm{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+@media (prefers-reduced-motion: reduce){.b{transition:none}.cell.fall{animation:none}}
+</style>
+</head>
+<body>
+<section id="start">
+  <button class="small gear2" id="gearBtn2" aria-label="Instellingen">⚙︎ Instellingen</button>
+  <h1>Bellenpop</h1>
+  <div class="set" id="startSettings" style="margin-top:0"></div>
+  <button class="act" id="startBtn">Start</button>
+</section>
+<section id="game">
+<header>
+  <h1>Bellenpop</h1>
+  <div class="top">
+    <button class="small" id="gearBtn" aria-label="Instellingen">⚙︎ Instellingen</button>
+    <div class="stats"><div>Score<b id="score">0</b></div><div>Record<b id="best">0</b></div></div>
+  </div>
+</header>
+<div id="board" role="grid" aria-label="Speelveld"></div>
+<div id="info"></div>
+<div class="actions">
+  <button class="act" id="undoBtn">Terug</button>
+  <button class="act" id="newBtn">Nieuw spel</button>
+</div>
+<div id="confirm" class="hide"><span>Huidig spel stoppen?</span><button class="small" id="yesBtn">Stoppen</button><button class="small" id="noBtn">Doorspelen</button></div>
+</section>
+<div id="panel" class="hide"><div class="sheet"><div class="phead"><b>Instellingen</b><button class="small" id="closeBtn">Sluiten</button></div><div class="set" id="panelSettings" style="margin-top:0"></div></div></div>
+<script>
+(function(){
+  var SIZES={weinig:[8,10],normaal:[10,12],veel:[12,15]};
+  var K=5, R, C, grid, sel=[], score=0, best=0, over=false, fall=null, busy=false, hist=[];
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cfg={theme:null,size:'normaal',undo:'aan',hand:'rechts',cb:'uit'};
+  var SYM=['<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="2.3" stroke="none"/></svg>','<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="2.6" fill="none" stroke-width="1.1"/></svg>','<svg viewBox="0 0 10 10"><rect x="1.8" y="4.1" width="6.4" height="1.8" rx=".5" stroke="none"/></svg>','<svg viewBox="0 0 10 10"><polygon points="5,1.8 8.2,5 5,8.2 1.8,5" stroke="none"/></svg>','<svg viewBox="0 0 10 10"><path d="M5 1.8v6.4M1.8 5h6.4" fill="none" stroke-width="1.5"/></svg>'];
+  try{ var s=JSON.parse(localStorage.getItem('bellenpop-cfg')||'{}'); for(var k in s) cfg[k]=s[k]; }catch(e){}
+  if(!SIZES[cfg.size]) cfg.size='normaal';
+  if(cfg.hand!=='links') cfg.hand='rechts';
+  if(cfg.cb!=='aan') cfg.cb='uit';
+  if(cfg.theme!=='light'&&cfg.theme!=='dark') cfg.theme=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+  var boardEl=document.getElementById('board'), infoEl=document.getElementById('info'), undoBtn=document.getElementById('undoBtn');
+
+  function saveCfg(){ try{ localStorage.setItem('bellenpop-cfg',JSON.stringify(cfg)); }catch(e){} }
+  function bestKey(){ return 'bellenpop-best-'+cfg.size+'-'+cfg.undo; }
+  function applyTheme(){ var d=document.documentElement; d.setAttribute('data-theme',cfg.theme); d.setAttribute('data-hand',cfg.hand); d.setAttribute('data-cb',cfg.cb); }
+  function applyAll(){ applyTheme(); if(grid) render(); }
+  function show(game){ document.getElementById('start').classList.toggle('hide',game); document.getElementById('confirm').classList.add('hide'); }
+  function info(t){ infoEl.textContent=t; }
+
+  function newGame(){ setup(); show(true); }
+  function setup(){
+    R=SIZES[cfg.size][1]; C=SIZES[cfg.size][0];
+    boardEl.style.gridTemplateColumns='repeat('+C+',1fr)';
+    boardEl.style.gridTemplateRows='repeat('+R+',1fr)';
+    boardEl.style.aspectRatio=C+'/'+R;
+    best=0; try{ best=parseInt(localStorage.getItem(bestKey())||'0',10)||0; }catch(e){}
+    grid=[];
+    for(var r=0;r<R;r++){ grid.push([]); for(var c=0;c<C;c++) grid[r].push(Math.floor(Math.random()*K)); }
+    sel=[]; score=0; over=false; fall=null; busy=false; hist=[];
+    undoBtn.classList.toggle('hide',cfg.undo!=='aan');
+    info('Tik op een groepje om het te kiezen, tik nog een keer om te poppen.');
+    render();
+  }
+  function group(r,c){
+    var col=grid[r][c]; if(col<0) return [];
+    var seen={}, out=[], st=[[r,c]]; seen[r+','+c]=1;
+    while(st.length){
+      var p=st.pop(); out.push(p);
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){
+        var y=p[0]+d[0], x=p[1]+d[1], k=y+','+x;
+        if(y<0||x<0||y>=R||x>=C||seen[k]||grid[y][x]!==col) return;
+        seen[k]=1; st.push([y,x]);
+      });
+    }
+    return out;
+  }
+  function inSel(r,c){ return sel.some(function(p){return p[0]===r&&p[1]===c;}); }
+  function pop(){
+    hist.push({g:JSON.stringify(grid),s:score});
+    var n=sel.length, pts=n*(n-1);
+    sel.forEach(function(p){ grid[p[0]][p[1]]=-1; });
+    score+=pts; sel=[];
+    var t=[];
+    for(var y0=0;y0<R;y0++){ t.push([]); for(var x0=0;x0<C;x0++) t[y0].push(grid[y0][x0]>=0?{v:grid[y0][x0],r:y0,c:x0}:null); }
+    for(var c=0;c<C;c++){
+      var col=[]; for(var r=R-1;r>=0;r--) if(t[r][c]) col.push(t[r][c]);
+      for(var r2=R-1,i=0;r2>=0;r2--,i++) t[r2][c]= i<col.length?col[i]:null;
+    }
+    var keep=[]; for(var c2=0;c2<C;c2++) if(t[R-1][c2]) keep.push(c2);
+    fall=[]; var maxD=0;
+    for(var r3=0;r3<R;r3++){
+      var row=keep.map(function(cc){return t[r3][cc];});
+      while(row.length<C) row.push(null);
+      fall.push([]);
+      for(var c3=0;c3<C;c3++){
+        var o=row[c3];
+        grid[r3][c3]=o?o.v:-1;
+        var dx=o?o.c-c3:0, dy=o?o.r-r3:0;
+        fall[r3].push([dx,dy]);
+        maxD=Math.max(maxD,Math.abs(dy),Math.abs(dx));
+      }
+    }
+    if(!reduce && maxD>0){ busy=true; setTimeout(function(){busy=false;},120+maxD*70); }
+    var left=0, moves=false;
+    for(var y=0;y<R;y++) for(var x=0;x<C;x++) if(grid[y][x]>=0){ left++; if(!moves && group(y,x).length>1) moves=true; }
+    if(left===0){ score+=1000; info('Alles weg! +1000 bonus. Eindscore: '+score); finish(); }
+    else if(!moves){ info('Geen zetten meer. '+left+' bellen over. Eindscore: '+score); finish(); }
+    else info('');
+    render();
+  }
+  function finish(){
+    over=true;
+    if(score>best){ best=score; try{ localStorage.setItem(bestKey(),String(best)); }catch(e){} }
+  }
+  function undo(){
+    if(busy||!hist.length) return;
+    var h=hist.pop(); grid=JSON.parse(h.g); score=h.s; sel=[]; over=false; fall=null;
+    info('Zet teruggedraaid.'); render();
+  }
+  function tap(r,c){
+    if(busy||over||grid[r][c]<0) return;
+    if(inSel(r,c)){ pop(); return; }
+    var g=group(r,c);
+    if(g.length<2){ sel=[]; info('Kies bellen met een buur van dezelfde kleur.'); }
+    else{ sel=g; info(''); }
+    render();
+  }
+  function render(){
+    boardEl.innerHTML='';
+    var tr=null; sel.forEach(function(p){ var better=cfg.hand==='links'?p[1]>(tr?tr[1]:-1):p[1]<(tr?tr[1]:99); if(!tr||p[0]<tr[0]||(p[0]===tr[0]&&better)) tr=p; });
+    for(var r=0;r<R;r++) for(var c=0;c<C;c++){
+      var b=document.createElement('button');
+      b.className='cell'+(inSel(r,c)?' sel':'');
+      b.setAttribute('aria-label', grid[r][c]<0?'leeg':'bel '+(grid[r][c]+1));
+      if(fall && !reduce && grid[r][c]>=0){
+        var f=fall[r][c];
+        if(f[0]||f[1]){
+          b.classList.add('fall');
+          b.style.setProperty('--dx',f[0]); b.style.setProperty('--dy',f[1]);
+          b.style.setProperty('--t',(0.12+Math.max(Math.abs(f[0]),Math.abs(f[1]))*0.07)+'s');
+        }
+      }
+      if(grid[r][c]>=0){
+        var d=document.createElement('div'); d.className='b'; d.style.setProperty('--c','var(--c'+grid[r][c]+')'); d.style.setProperty('--sym','var(--s'+grid[r][c]+')'); d.innerHTML=SYM[grid[r][c]]; b.appendChild(d);
+      }
+      if(tr&&tr[0]===r&&tr[1]===c){ var pl=document.createElement('span'); pl.className='pts'; pl.textContent=sel.length*(sel.length-1); b.appendChild(pl); }
+      (function(rr,cc){ b.addEventListener('click',function(){tap(rr,cc);}); })(r,c);
+      boardEl.appendChild(b);
+    }
+    fall=null;
+    undoBtn.disabled=!hist.length;
+    document.getElementById('score').textContent=score;
+    document.getElementById('best').textContent=best;
+  }
+  function seg(label,key,opts,onchange,box){
+    var row=document.createElement('div'); row.className='row'; row.dataset.key=key;
+    var sp=document.createElement('span'); sp.textContent=label; row.appendChild(sp);
+    var wrap=document.createElement('div'); wrap.className='seg'; row.appendChild(wrap);
+    function paint(){ Array.prototype.forEach.call(wrap.children,function(b){ b.setAttribute('aria-pressed',String(b.dataset.v===cfg[key])); }); }
+    opts.forEach(function(o){
+      var b=document.createElement('button'); b.textContent=o[1]; b.dataset.v=o[0];
+      b.addEventListener('click',function(){ if(cfg[key]===o[0]) return; cfg[key]=o[0]; saveCfg(); paint(); onchange(); });
+      wrap.appendChild(b);
+    });
+    paint(); document.getElementById(box||'startSettings').appendChild(row);
+  }
+  seg('Achtergrond','theme',[['light','Licht'],['dark','Donker']],applyAll,'panelSettings');
+  seg('Hand','hand',[['rechts','Rechts'],['links','Links']],applyAll,'panelSettings');
+  seg('Kleurenblind','cb',[['uit','Uit'],['aan','Aan']],applyAll,'panelSettings');
+  seg('Aantal bolletjes','size',[['weinig','Weinig'],['normaal','Normaal'],['veel','Veel']],setup);
+  seg('Terugknop','undo',[['aan','Aan'],['uit','Uit']],setup);
+  document.getElementById('startBtn').addEventListener('click',newGame);
+  document.getElementById('newBtn').addEventListener('click',function(){ if(over) show(false); else document.getElementById('confirm').classList.remove('hide'); });
+  document.getElementById('yesBtn').addEventListener('click',function(){ show(false); });
+  document.getElementById('noBtn').addEventListener('click',function(){ document.getElementById('confirm').classList.add('hide'); });
+  var panel=document.getElementById('panel');
+  function openP(){ panel.classList.remove('hide'); }
+  function closeP(){ panel.classList.add('hide'); }
+  document.getElementById('gearBtn').addEventListener('click',openP);
+  document.getElementById('gearBtn2').addEventListener('click',openP);
+  document.getElementById('closeBtn').addEventListener('click',closeP);
+  panel.addEventListener('click',function(e){ if(e.target===panel) closeP(); });
+  undoBtn.addEventListener('click',undo);
+  applyTheme(); setup();
+})();
+</script>
+</body>
+</html>
