@@ -1,0 +1,39 @@
+﻿key;text;notes (do not change)
+titel;Bubblepopper;Name of the game (page title and heading)
+instellingen;Settings;Heading of the settings screen and label for screen readers
+sluiten;Close;Button to close the settings
+start;Start;Start button on the start screen
+score;Score;Label above your current score
+record;Record;Label above your highest score
+speelveld;Gameboard;Label of the game board for screen readers
+terug;Undo;Button to undo a move
+nieuw_spel;New game;Button to start over
+stop_vraag;Stop current game?;Question before stopping a running game
+stoppen;Yes;Answer: stop the game
+doorspelen;No;Answer: continue playing
+info_start;Tap a group to select it, tap again to pop it;Instructions at the start of a game
+info_geen_buur;Select groups of at least 2;Message when you tap a bubble without a same-colored neighbor
+info_terug;Undone;Message after undoing a move
+info_alles_weg;All cleared! +1000 bonus. Final score: {score};End: board empty. {score} = your final score
+info_geen_zetten;No moves left. {left} bubbles remaining. Final score: {score};End: no moves left. {left} = bubbles remaining, {score} = final score
+bel;bubble {n};Label for screen readers. {n} = color number
+bel_leeg;empty;Label for screen readers for an empty spot
+set_kleurenblind;Colorblind;Setting: colorblind mode
+kb_uit;Off;Colorblind mode off
+kb_aan;On;Colorblind mode on
+set_aantal;Number of bubbles;Setting on the start screen (slider)
+aantal_waarde;{n} bubbles;Text next to the slider. {n} = number of bubbles
+set_terugknop;Undo button;Setting on the start screen
+tb_aan;On;Undo button on
+tb_uit;Off;Undo button off
+set_geluid;Sound;Setting: sound when popping
+geluid_aan;On;Sound on
+geluid_uit;Off;Sound off
+set_kindtype;Symbol;Setting on the start screen: classic, balloons, cars or flowers
+type_classic;Classic;Option: plain bubbles
+type_ballon;Balloons;Option: balloons
+type_auto;Cars;Option: cars
+type_bloem;Flowers;Option: flowers
+set_modus;Mode;Setting on the start screen: normal or always solvable
+modus_normaal;Normal;Option: random board
+modus_oplosbaar;Solvable;Option: board that can always be cleared
