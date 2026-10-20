@@ -39,6 +39,8 @@ button:focus-visible{outline:3px solid var(--c3);outline-offset:2px}
 .seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:.9rem;padding:7px 11px;border-radius:999px}
 .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);font-weight:700}
 .hide{display:none!important}
+.prev{min-height:1.2em;text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:6px}
+.actions{flex-wrap:wrap}
 .gear{font-size:1.3rem;line-height:1;padding:6px 11px}
 #board.stuck .b{outline:3px solid #d62c2c;outline-offset:1px}
 .q{font-size:1.5rem;font-weight:700;text-align:center}
@@ -95,7 +97,9 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
 </header>
 <div id="board" role="grid" data-ta="speelveld" aria-label="Speelveld"></div>
 <div id="info"></div>
+<div id="prevInfo" class="prev"></div>
 <div class="actions">
+  <button class="act hide" id="replayBtn" data-t="zelfde_spel">Zelfde spel nog eens</button>
   <button class="act" id="undoBtn" data-t="terug">Terug</button>
   <button class="act" id="newBtn" data-t="nieuw_spel">Nieuw spel</button>
 </div>
@@ -105,7 +109,7 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
 <div id="panel" class="hide"><div class="sheet"><div class="phead"><b data-t="instellingen">Instellingen</b><button class="small" id="closeBtn" data-t="sluiten">Sluiten</button></div><div class="set" id="panelSettings" style="margin-top:0"></div></div></div>
 <script>
 (function(){
-  var T={"titel": "Bellenpop", "instellingen": "Instellingen", "sluiten": "Sluiten", "start": "Start", "score": "Score", "record": "Record", "speelveld": "Speelveld", "terug": "Terug", "nieuw_spel": "Nieuw spel", "stop_vraag": "Huidig spel stoppen?", "stoppen": "Stoppen", "doorspelen": "Doorspelen", "info_start": "Tik op een groepje om het te kiezen, tik nog een keer om te poppen.", "info_geen_buur": "Kies bellen met een buur van dezelfde kleur.", "info_terug": "Zet teruggedraaid.", "info_alles_weg": "Alles weg! +1000 bonus. Eindscore: {score}", "info_geen_zetten": "Geen zetten meer. {left} bellen over. Eindscore: {score}", "bel": "bel {n}", "bel_leeg": "leeg", "set_kleurenblind": "Kleurenblind", "kb_uit": "Uit", "kb_aan": "Aan", "set_aantal": "Aantal bolletjes", "aantal_waarde": "{n} bellen", "set_terugknop": "Terugknop", "tb_aan": "Aan", "tb_uit": "Uit", "set_geluid": "Geluid", "geluid_aan": "Aan", "geluid_uit": "Uit", "set_kindtype": "Symbool", "type_ballon": "Ballonnen", "type_auto": "Auto's", "type_bloem": "Bloemen", "type_classic": "Classic", "set_modus": "Spel", "modus_normaal": "Normaal", "modus_oplosbaar": "Oplosbaar"};
+  var T={"titel": "Bellenpop", "instellingen": "Instellingen", "sluiten": "Sluiten", "start": "Start", "score": "Score", "record": "Record", "speelveld": "Speelveld", "terug": "Terug", "nieuw_spel": "Nieuw spel", "stop_vraag": "Huidig spel stoppen?", "stoppen": "Stoppen", "doorspelen": "Doorspelen", "info_start": "Tik op een groepje om het te kiezen, tik nog een keer om te poppen.", "info_geen_buur": "Kies bellen met een buur van dezelfde kleur.", "info_terug": "Zet teruggedraaid.", "info_alles_weg": "Alles weg! +1000 bonus. Eindscore: {score}", "info_geen_zetten": "Geen zetten meer. {left} bellen over. Eindscore: {score}", "bel": "bel {n}", "bel_leeg": "leeg", "set_kleurenblind": "Kleurenblind", "kb_uit": "Uit", "kb_aan": "Aan", "set_aantal": "Aantal bolletjes", "aantal_waarde": "{n} bellen", "set_terugknop": "Terugknop", "tb_aan": "Aan", "tb_uit": "Uit", "set_geluid": "Geluid", "geluid_aan": "Aan", "geluid_uit": "Uit", "set_kindtype": "Symbool", "type_ballon": "Ballonnen", "type_auto": "Auto's", "type_bloem": "Bloemen", "type_classic": "Classic", "set_modus": "Spel", "modus_normaal": "Normaal", "modus_oplosbaar": "Oplosbaar", "zelfde_spel": "Zelfde spel nog eens", "vorige_score": "Vorige score op dit spel: {prev}", "beste_veld": "Beste op dit spel: {best}"};
   function t(k,v){ var s=(T[k]!=null?T[k]:k); if(v) s=s.replace(/\{(\w+)\}/g,function(m,n){ return v[n]!=null?v[n]:m; }); return s; }
   function parseCSV(txt){
     txt=txt.replace(/^\uFEFF/,'');
@@ -134,7 +138,7 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
     });
   }
   function main(){
-  var K=5, R, C, grid, sel=[], score=0, best=0, over=false, fall=null, busy=false, hist=[], stuck=false;
+  var K=5, R, C, grid, sel=[], score=0, best=0, over=false, fall=null, busy=false, hist=[], stuck=false, startGrid=null, attempts=[];
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cfg={theme:null,size:'normaal',undo:'aan',hand:'rechts',cb:'uit',sound:'aan',kidtype:'classic',mode:'normaal'};
   var SYM=['<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="2.3" stroke="none"/></svg>','<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="2.6" fill="none" stroke-width="1.1"/></svg>','<svg viewBox="0 0 10 10"><rect x="1.8" y="4.1" width="6.4" height="1.8" rx=".5" stroke="none"/></svg>','<svg viewBox="0 0 10 10"><polygon points="5,1.8 8.2,5 5,8.2 1.8,5" stroke="none"/></svg>','<svg viewBox="0 0 10 10"><path d="M5 1.8v6.4M1.8 5h6.4" fill="none" stroke-width="1.5"/></svg>'];
@@ -302,7 +306,7 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
     grid=[];
     var sol=cfg.mode==='oplosbaar'?genSolvable(R,C,K):null;
     for(var r=0;r<R;r++){ grid.push([]); for(var c=0;c<C;c++) grid[r].push(sol?sol.cols[c][R-1-r]:Math.floor(Math.random()*K)); }
-    sel=[]; score=0; over=false; fall=null; busy=false; hist=[]; stuck=false;
+    sel=[]; score=0; over=false; fall=null; busy=false; hist=[]; stuck=false; startGrid=JSON.stringify(grid); attempts=[]; showPrev();
     undoBtn.classList.toggle('hide',cfg.undo!=='aan');
     info(t('info_start'));
     render();
@@ -355,14 +359,24 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
     else info('');
     render();
   }
+  function showPrev(){
+    var el=document.getElementById('prevInfo'); if(!el) return;
+    if(!over||attempts.length<2){ el.textContent=''; return; }
+    el.textContent=t('vorige_score',{prev:attempts[attempts.length-2]})+' \u00b7 '+t('beste_veld',{best:Math.max.apply(null,attempts)});
+  }
+  function replay(){
+    if(!startGrid) return;
+    grid=JSON.parse(startGrid); sel=[]; score=0; over=false; fall=null; busy=false; hist=[]; stuck=false;
+    info(t('info_start')); showPrev(); render();
+  }
   function finish(){
-    over=true;
+    over=true; attempts.push(score); showPrev();
     if(score>best){ best=score; try{ localStorage.setItem(bestKey(),String(best)); }catch(e){} }
   }
   function undo(){
     if(busy||!hist.length) return;
-    var h=hist.pop(); grid=JSON.parse(h.g); score=h.s; sel=[]; over=false; fall=null; stuck=false;
-    info(t('info_terug')); render();
+    if(over&&attempts.length) attempts.pop(); var h=hist.pop(); grid=JSON.parse(h.g); score=h.s; sel=[]; over=false; fall=null; stuck=false;
+    info(t('info_terug')); showPrev(); render();
   }
   function tap(r,c){
     if(busy||over||grid[r][c]<0) return;
@@ -397,6 +411,7 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
     fall=null;
     boardEl.classList.toggle('stuck',stuck);
     undoBtn.disabled=!hist.length;
+    document.getElementById('replayBtn').classList.toggle('hide',!over);
     document.getElementById('score').textContent=score;
     document.getElementById('best').textContent=best;
   }
@@ -430,6 +445,7 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
   seg(t('set_kindtype'),'kidtype',[['classic',t('type_classic')],['ballon',t('type_ballon')],['auto',t('type_auto')],['bloem',t('type_bloem')]],applyAll);
   seg(t('set_modus'),'mode',[['normaal',t('modus_normaal')],['oplosbaar',t('modus_oplosbaar')]],setup);
   document.getElementById('startBtn').addEventListener('click',newGame);
+  document.getElementById('replayBtn').addEventListener('click',replay);
   document.getElementById('newBtn').addEventListener('click',function(){ if(over) show(false); else document.getElementById('confirm').classList.remove('hide'); });
   document.getElementById('yesBtn').addEventListener('click',function(){ show(false); });
   document.getElementById('noBtn').addEventListener('click',function(){ document.getElementById('confirm').classList.add('hide'); });

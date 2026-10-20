@@ -37,3 +37,6 @@ type_bloem;Flowers;Option: flowers
 set_modus;Mode;Setting on the start screen: normal or always solvable
 modus_normaal;Normal;Option: random board
 modus_oplosbaar;Solvable;Option: board that can always be cleared
+zelfde_spel;Play this game again;Button at the end of a game: replay the exact same board
+vorige_score;Previous score on this game: {prev};Shown at the end of a replay. {prev} = your previous score on this board
+beste_veld;Best on this game: {best};Shown at the end of a replay. {best} = best score on this board
