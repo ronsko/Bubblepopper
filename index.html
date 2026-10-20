@@ -206,7 +206,7 @@ button.small{background:var(--panel);color:var(--ink);border:0;border-radius:999
       }
     });
   }
-  function playPop(){ if(cfg.sound!=='aan') return; try{ var a=popAudio.cloneNode(true); var p=a.play(); if(p&&p.catch) p.catch(function(){}); }catch(e){} }
+  function playPop(){ if(cfg.sound!=='aan') return; try{ var a=popAudio.cloneNode(true), rate=0.88+Math.random()*0.26; a.preservesPitch=false; a.mozPreservesPitch=false; a.webkitPreservesPitch=false; a.defaultPlaybackRate=rate; a.playbackRate=rate; var p=a.play(); if(p&&p.catch) p.catch(function(){}); }catch(e){} }
   var boardEl=document.getElementById('board'), infoEl=document.getElementById('info'), undoBtn=document.getElementById('undoBtn');
 
   function saveCfg(){ try{ localStorage.setItem('bellenpop-cfg',JSON.stringify(cfg)); }catch(e){} }
